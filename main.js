@@ -1,5 +1,6 @@
 //Load HTTP module
 const http = require("http");
+const { setUncaughtExceptionCaptureCallback } = require("process");
 const hostname = '127.0.0.1';
 const port = 3000;
 
@@ -91,7 +92,7 @@ function playerTurn(grid, isWhiteTurn, row1, col1, row2, col2) {
     let piece = grid[row1][col1];
     switch(piece) {
         case "pawn":
-            movePawn();
+            movePawn(grid, isWhiteTurn, row1, col1, row2, col2);
             break;
         case "rook":
             moveRook(grid, isWhiteTurn, row1, col1, row2, col2);
@@ -101,13 +102,12 @@ function playerTurn(grid, isWhiteTurn, row1, col1, row2, col2) {
             break;
         case "knight":
             moveKnight(grid, isWhiteTurn, row1, col1, row2, col2);
-
             break;
         case "queen":
-            movePawn();
+            moveQueen(grid, isWhiteTurn, row1, col1, row2, col2);
             break;
         case "king":
-            movePawn();
+            moveKing(grid, isWhiteTurn, row1, col1, row2, col2);
             break;
     }
 
@@ -127,28 +127,32 @@ function isOOB(row, col) {
     return row < 0 || row >= 8 || col < 0 || col >= 8;
 }
 
+function movePawn(grid, isWhiteTurn, row1, col1, row2, col2) {
+    // be able to move 2 from initial square    - ignore for now
+    // en passant                               - ignore for now
 
-//TODO: write this so that it doesn't allow you to capure your own pieces
+    let forwardDirection = 1;
+    if(!isWhiteTurn) {
+        forwardDirection = -1;
+    }
+    let newRow = row1 + forwardDirection;
+
+    if(row2 != newRow) {
+        return false;
+    }
+
+    // move forward 1 if there is no enemy piece
+    if(col2 == col1 && grid[newRow][col2] == "") {
+        return true;
+    }
+    // check diagonal
+    else if((col2 == col1 - 1 || col2 == col1 + 1) && grid[row2][col2] != "") {
+        return true;
+    }
+    return false;
+}
+
 function moveRook(grid, isWhiteTurn, row1, col1, row2, col2) {
-    // invalid move- stays in same place
-    if(isSameRow && isSameCol) {
-        return false;
-    }
-    if(!isSameRow && !isSameCol) {
-        return false;
-    }
-
-    // now check to see if we are skipping over any pieces
-
-    // 0 0 0 0 0 0 0 0 
-    // 0 0 0 0 0 0 0 0
-    // 0 0 0 ^ 0 0 0 0
-    // 0 0 0 | 0 0 0 0
-    // 0 0 0 R 0 0 0 0
-    // 0 0 0 0 0 0 0 0
-    // 0 0 0 0 0 0 0 0
-    // 0 0 0 0 0 0 0 0
-
     // up
     for(let i = row1; i < 8; i++) {
         if(row2 == i && col2 == col1) {
@@ -259,6 +263,128 @@ function moveKnight(grid, isWhiteTurn, row1, col1, row2, col2) {
     return false
 }
 
+    // 0 0 0 0 0 0 0 0 
+    // 0 0 0 0 0 0 0 0
+    // 0 0 0 0 0 0 0 0
+    // 0 0 0 0 0 0 0 0
+    // 0 0 0 0 0 0 k 0
+    // 0 0 0 0 0 0 0 0
+    // 0 0 0 0 0 X 0 0
+    // 0 0 0 0 0 0 0 0
+
+
+function moveQueen(grid, isWhiteTurn, row1, col1, row2, col2) {
+    // up
+    for(let i = row1; i < 8; i++) {
+        if(row2 == i && col2 == col1) {
+            return true;
+        }
+
+        // we have encountered another piece- abort
+        if(grid[i][col1] != "") {
+            break;
+        }
+    }
+    // down
+    for(let i = row1; i >= 0; i--) {
+        if(row2 == i && col2 == col1) {
+            return true;
+        }
+
+        // we have encountered another piece- abort
+        if(grid[i][col1] != "") {
+            break;
+        }
+    }
+    // right
+    for(let j = col1; j < 8; j++) {
+        if(col2 == j && row2 == row1) {
+            return true;
+        }
+
+        // we have encountered another piece- abort
+        if(grid[row1][j] != "") {
+            break;
+        }
+    }
+    // left
+    for(let j = col1; j >= 0; j--) {
+        if(col2 == j && row2 == row1) {
+            return true;
+        }
+
+        // we have encountered another piece- abort
+        if(grid[row1][j] != "") {
+            break;
+        }
+    }
+    // up right
+    for(let i = row1, j = col1; i < 8, j < 8; i++, j++) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+    
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+    // down right
+    for(let i = row1, j = col1; i >= 0, j < 8; i--, j++) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+        
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+    // up left
+    for(let i = row1, j = col1; i < 8, j >= 0; i++, j--) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+    
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+    // down left
+    for(let i = row1, j = col1; i >= 0, j >= 0; i--, j--) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+    
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+    return false;
+}
+
+function moveKing(grid, isWhiteTurn, row1, col1, row2, col2) {
+    let rowPositions = [-1,-1,-1, 0, 1, 1, 1, 0];
+    let colPositions = [ 1, 0,-1,-1,-1, 0, 1, 1];
+
+    for(let i = 0; i < 8; i++) {
+        let resultingRow = row1 + rowPositions[i];
+        let resultingCol = col1 + colPositions[i];
+
+        if(!isOOB(resultingRow, resultingCol)) {
+            return true;
+        }
+    }
+    return false
+}
+
 function isSameCoordinate(row1, col1, row2, col2) {
     return row1 == row2 && col1 == col2;
 }
+
+
+// we never need to check the location of our computed paths for the piece to go in the grid
+// what we do instead, is check if the computed path is equal to row2,col2
+// then since we know row2,col2 is not OOB, we can do grid[row2][col2]
