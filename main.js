@@ -43,12 +43,26 @@ server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
 
     let grid = []; 
-    let col = ["", "w pawn", "", "", "", "", "b pawn", ""];
-
+    let colA = ["w rook", "w pawn", "", "", "", "", "b pawn", "b rook"];
+    let colB = ["w knight", "w pawn", "", "", "", "", "b pawn", "b knight"];
+    let colC = ["w bishop", "w pawn", "", "", "", "", "b pawn", "b bishop"];
+    let colD = ["w queen", "w pawn", "", "", "", "", "b pawn", "b queen"];
+    let colE = ["w king", "w pawn", "", "", "", "", "b pawn", "b knight"];
+    let colF = ["w bishop", "w pawn", "", "", "", "", "b pawn", "b bishop"];
+    let colG = ["w knight", "w pawn", "", "", "", "", "b pawn", "b knight"];
+    let colH = ["w rook", "w pawn", "", "", "", "", "b pawn", "b rook"];
 
     // change this to be hardcoded instead perhaps
     for(let i = 0; i < 8; i++) {
-        grid.push(col);
+        grid.push(colA);
+        grid.push(colB);
+        grid.push(colC);
+        grid.push(colD);
+        grid.push(colE);
+        grid.push(colF);
+        grid.push(colG);
+        grid.push(colH);
+
     }
 
     let isWhiteTurn = true;
@@ -87,13 +101,11 @@ function playerTurn(grid, isWhiteTurn, row1, col1, row2, col2) {
         case "pawn":
             movePawn();
             break;
-
         case "rook":
             moveRook(grid, isWhiteTurn, row1, col1, row2, col2);
             break;
-
         case "bishop":
-            movePawn();
+            moveBishop(grid, isWhiteTurn, row1, col1, row2, col2);
             break;
         case "knight":
             movePawn();
@@ -122,6 +134,8 @@ function isOOB(row, col) {
     return row < 0 || row >= 8 || col < 0 || col >= 8;
 }
 
+
+
 //TODO: write this so that it doesn't allow you to capure your own pieces
 function moveRook(grid, isWhiteTurn, row1, col1, row2, col2) {
     // move up down left or right, for any amount of tiles, until you hit something
@@ -140,7 +154,7 @@ function moveRook(grid, isWhiteTurn, row1, col1, row2, col2) {
 
     // now check to see if we are skipping over any pieces
 
-
+    // 0 0 0 0 0 0 0 0 
     // 0 0 0 0 0 0 0 0
     // 0 0 0 ^ 0 0 0 0
     // 0 0 0 | 0 0 0 0
@@ -195,4 +209,55 @@ function moveRook(grid, isWhiteTurn, row1, col1, row2, col2) {
     }
 
     return false;
+}
+
+function moveBishop(grid, isWhiteTurn, row1, col1, row2, col2) {
+
+    let isSameRow = row1 == row2;
+    let isSameCol = col1 == col2; 
+
+    // up right
+    for(let i = row1, j = col1; i < 8, j < 8; i++, j++) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+    
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+    // down right
+    for(let i = row1, j = col1; i >= 0, j < 8; i--, j++) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+        
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+     // up left
+     for(let i = row1, j = col1; i < 8, j >= 0; i++, j--) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+    
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
+     // down left
+     for(let i = row1, j = col1; i >= 0, j >= 0; i--, j--) {
+        if(row2 == i && col2 == j) {
+            return true;
+        }
+    
+        // we have encountered another piece- abort
+        if(grid[i][j] != "") {
+            break;
+        }
+    }
 }
