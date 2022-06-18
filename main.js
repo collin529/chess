@@ -42,28 +42,16 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
 
-    let grid = []; 
-    let colA = ["w rook", "w pawn", "", "", "", "", "b pawn", "b rook"];
-    let colB = ["w knight", "w pawn", "", "", "", "", "b pawn", "b knight"];
-    let colC = ["w bishop", "w pawn", "", "", "", "", "b pawn", "b bishop"];
-    let colD = ["w queen", "w pawn", "", "", "", "", "b pawn", "b queen"];
-    let colE = ["w king", "w pawn", "", "", "", "", "b pawn", "b knight"];
-    let colF = ["w bishop", "w pawn", "", "", "", "", "b pawn", "b bishop"];
-    let colG = ["w knight", "w pawn", "", "", "", "", "b pawn", "b knight"];
-    let colH = ["w rook", "w pawn", "", "", "", "", "b pawn", "b rook"];
-
-    // change this to be hardcoded instead perhaps
-    for(let i = 0; i < 8; i++) {
-        grid.push(colA);
-        grid.push(colB);
-        grid.push(colC);
-        grid.push(colD);
-        grid.push(colE);
-        grid.push(colF);
-        grid.push(colG);
-        grid.push(colH);
-
-    }
+    let grid = [ 
+        ["w rook",   "w pawn", "", "", "", "", "b pawn", "b rook"],
+        ["w knight", "w pawn", "", "", "", "", "b pawn", "b knight"],
+        ["w bishop", "w pawn", "", "", "", "", "b pawn", "b bishop"],
+        ["w queen",  "w pawn", "", "", "", "", "b pawn", "b queen"],
+        ["w king",   "w pawn", "", "", "", "", "b pawn", "b knight"],
+        ["w bishop", "w pawn", "", "", "", "", "b pawn", "b bishop"],
+        ["w knight", "w pawn", "", "", "", "", "b pawn", "b knight"],
+        ["w rook",   "w pawn", "", "", "", "", "b pawn", "b rook"]
+    ];
 
     let isWhiteTurn = true;
     let turnCounter = 0;
@@ -84,6 +72,10 @@ function runPlayerTurn(grid, isWhiteTurn, turnCounter) {
 
 // the player inputs their move here
 function playerTurn(grid, isWhiteTurn, row1, col1, row2, col2) {
+    // start and end pos cannot be the same
+    if(isSameCoordinate(row1, col1, row2, col2)) {
+        return false;
+    }
 
     // starting position is OOB, invalid move
     if(!isOOB(row1, col1)) {
@@ -108,7 +100,8 @@ function playerTurn(grid, isWhiteTurn, row1, col1, row2, col2) {
             moveBishop(grid, isWhiteTurn, row1, col1, row2, col2);
             break;
         case "knight":
-            movePawn();
+            moveKnight(grid, isWhiteTurn, row1, col1, row2, col2);
+
             break;
         case "queen":
             movePawn();
@@ -135,15 +128,8 @@ function isOOB(row, col) {
 }
 
 
-
 //TODO: write this so that it doesn't allow you to capure your own pieces
 function moveRook(grid, isWhiteTurn, row1, col1, row2, col2) {
-    // move up down left or right, for any amount of tiles, until you hit something
-
-    // check in all 4 d
-    let isSameRow = row1 == row2;
-    let isSameCol = col1 == col2;
-
     // invalid move- stays in same place
     if(isSameRow && isSameCol) {
         return false;
@@ -207,15 +193,10 @@ function moveRook(grid, isWhiteTurn, row1, col1, row2, col2) {
             break;
         }
     }
-
     return false;
 }
 
 function moveBishop(grid, isWhiteTurn, row1, col1, row2, col2) {
-
-    let isSameRow = row1 == row2;
-    let isSameCol = col1 == col2; 
-
     // up right
     for(let i = row1, j = col1; i < 8, j < 8; i++, j++) {
         if(row2 == i && col2 == j) {
@@ -238,8 +219,8 @@ function moveBishop(grid, isWhiteTurn, row1, col1, row2, col2) {
             break;
         }
     }
-     // up left
-     for(let i = row1, j = col1; i < 8, j >= 0; i++, j--) {
+    // up left
+    for(let i = row1, j = col1; i < 8, j >= 0; i++, j--) {
         if(row2 == i && col2 == j) {
             return true;
         }
@@ -249,8 +230,8 @@ function moveBishop(grid, isWhiteTurn, row1, col1, row2, col2) {
             break;
         }
     }
-     // down left
-     for(let i = row1, j = col1; i >= 0, j >= 0; i--, j--) {
+    // down left
+    for(let i = row1, j = col1; i >= 0, j >= 0; i--, j--) {
         if(row2 == i && col2 == j) {
             return true;
         }
@@ -260,4 +241,24 @@ function moveBishop(grid, isWhiteTurn, row1, col1, row2, col2) {
             break;
         }
     }
+    return false;
+}
+
+function moveKnight(grid, isWhiteTurn, row1, col1, row2, col2) {
+    let rowPositions = [-1,-2,-2,-1, 1, 2, 2, 1];
+    let colPositions = [ 2, 1,-1,-2,-2,-1, 1, 2];
+
+    for(let i = 0; i < 8; i++) {
+        let resultingRow = row1 + rowPositions[i];
+        let resultingCol = col1 + colPositions[i];
+
+        if(!isOOB(resultingRow, resultingCol)) {
+            return true;
+        }
+    }
+    return false
+}
+
+function isSameCoordinate(row1, col1, row2, col2) {
+    return row1 == row2 && col1 == col2;
 }
